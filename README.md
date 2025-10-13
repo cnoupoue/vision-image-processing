@@ -23,14 +23,22 @@ Before getting started, make sure you have the following installed on your machi
 - [Docker Compose](https://docs.docker.com/compose/) - Container orchestration
 - [Git](https://git-scm.com/) - To clone the repository
 - [Python 3](https://www.python.org/) - Required for the Data Mining service- Docker
-- Make
 
 ## Installation
+
+For Linux/macOS
 
 ```bash
 make install
 make up
 ```
+
+For Windows
+
+```bash
+setup.bat install
+setup.bat up
+``` 
 
 ## Authors
 
