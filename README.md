@@ -9,6 +9,37 @@ A **Flask** web server provides a live interface to visualize the detected board
 - Flask-based web interface for visualization and interaction  
 - Modular and extensible architecture  
 
+## How It Works
+
+This project uses your **iPhone as a webcam** through **Continuity Camera** (macOS) or **Camo Virtual Driver** (Windows).  
+No extra apps need to be running — the system handles everything automatically.
+
+### System Integration
+
+macOS and Windows expose the iPhone as a **standard UVC (USB Video Class) webcam** using a built-in or virtual driver.  
+This means OpenCV can access it like any normal webcam — no manual setup required.
+
+### OpenCV
+
+`cv2.VideoCapture()` simply requests the first available camera from the OS.  
+The system returns the virtual iPhone camera (e.g., *“Camo Studio Virtual Camera”* or *“Continuity Camera”*).  
+OpenCV reads frames directly from this virtual webcam.
+
+### Flask Streaming
+
+The video frames are encoded as JPEGs and streamed over HTTP using an **MJPEG feed**.  
+The browser displays this live feed in real time at `/video_feed`.
+
+### Summary
+
+| Component | Role |
+|------------|------|
+| **iPhone** | Captures the video feed |
+| **OS driver (Continuity / Camo)** | Exposes iPhone as a virtual webcam |
+| **OpenCV** | Reads frames from the virtual camera |
+| **Flask** | Streams frames to the web |
+| **Browser** | Displays the live feed |
+
 ## Tech Stack
 - **Python 3.x**
 - **Flask**
