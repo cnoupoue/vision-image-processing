@@ -16,9 +16,14 @@ A **Flask** web server provides a live interface to visualize the detected board
 - **Numpy**
 
 ## Prerequisites
-- Docker
+
+Before getting started, make sure you have the following installed on your machine:
+
+- [Docker](https://www.docker.com/products/docker-desktop) - Container management
+- [Docker Compose](https://docs.docker.com/compose/) - Container orchestration
+- [Git](https://git-scm.com/) - To clone the repository
+- [Python 3](https://www.python.org/) - Required for the Data Mining service- Docker
 - Make
-- Python
 
 ## Installation
 
@@ -26,3 +31,17 @@ A **Flask** web server provides a live interface to visualize the detected board
 make install
 make up
 ```
+
+## Authors
+
+- [Jobelin KOM](https://linkedin.com/in/jobelin-kom/).
+- [Cameron NOUPOUE](https://linkedin.com/in/cnoupoue/).
+- [Mathys FRANCO](https://www.linkedin.com/in/mathys-franco/).
+
+## Credits 
+
+Project devised and created during my studies at the Haute-Ecole de la Province de Liège (HEPL), Belgium.
+
+## Licenses
+
+This project is licensed under the [MIT license](https://mit-license.org/).
