@@ -51,7 +51,6 @@ setup.bat docker-up
 
 - [Jobelin KOM](https://linkedin.com/in/jobelin-kom/).
 - [Cameron NOUPOUE](https://linkedin.com/in/cnoupoue/).
-- [Mathys FRANCO](https://www.linkedin.com/in/mathys-franco/).
 
 ## Credits 
 
