@@ -23,6 +23,9 @@ Before getting started, make sure you have the following installed on your machi
 - [Docker Compose](https://docs.docker.com/compose/) - Container orchestration
 - [Git](https://git-scm.com/) - To clone the repository
 - [Python 3](https://www.python.org/) - Required for the Data Mining service- Docker
+- [Camo Studio](camo.studio) - Required to get the webcam of your phone as a driver on your laptop
+
+You'll also need Camo Video on your iPhone
 
 ## Installation
 

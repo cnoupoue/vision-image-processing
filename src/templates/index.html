@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Simple Flask App</title>
+    <title>Vision project [Tikam and Tikom]</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>Hello, Flask!</h1>
-    <p>This is a minimal Flask project.</p>
+	<h1>Video in real time</h1>
+    <img src="{{ url_for('video.video_feed') }}" width="640" height="480">
 </body>
 </html>
 
