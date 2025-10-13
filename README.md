@@ -31,6 +31,8 @@ For Linux/macOS
 ```bash
 make install
 make up
+make docker-build
+make docker-up
 ```
 
 For Windows
@@ -38,6 +40,8 @@ For Windows
 ```bash
 setup.bat install
 setup.bat up
+setup.bat docker-build
+setup.bat docker-up
 ``` 
 
 ## Authors
