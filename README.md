@@ -38,7 +38,6 @@ The browser displays this live feed in real time at `/video_feed`.
 | **OS driver (Continuity / Camo)** | Exposes iPhone as a virtual webcam |
 | **OpenCV** | Reads frames from the virtual camera |
 | **Flask** | Streams frames to the web |
-| **Browser** | Displays the live feed |
 
 ## Tech Stack
 - **Python 3.x**

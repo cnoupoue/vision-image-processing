@@ -2,12 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Vision project [Tikam and Tikom]</title>
+    <title>Monopoly Vision Board</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-	<h1>Video in real time</h1>
-    <img src="{{ url_for('video.video_feed') }}" width="640" height="480">
+    <div class="overlay"></div>
+    <header>
+        <h1>Monopoly Vision Board</h1>
+        <p>Real-time game board detection powered by your camera</p>
+    </header>
+
+    <main>
+        <div class="camera-container">
+            <div class="video-frame">
+                <img src="{{ url_for('video.video_feed') }}" alt="Live Video Feed">
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Created by <strong>Tikam & Tikom</strong> — Copyrights 2025</p>
+    </footer>
 </body>
 </html>
 
