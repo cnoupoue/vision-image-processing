@@ -3,6 +3,10 @@
 This project analyzes a physical game board in real-time using **OpenCV**, detects and identifies the pieces present, and reconstructs their positions digitally.  
 A **Flask** web server provides a live interface to visualize the detected board state.
 
+## Assignment Due Date
+
+[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/mdfMrQS_)
+
 ## Features
 - Real-time video capture and analysis with OpenCV  
 - Game piece detection and classification  
