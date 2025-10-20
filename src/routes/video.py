@@ -1,5 +1,5 @@
 from flask import Blueprint, Response, render_template
-from camera import Camera
+from camera.camera import Camera
 
 video_bp = Blueprint('video', __name__)
 camera = Camera()

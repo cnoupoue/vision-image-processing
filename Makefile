@@ -24,8 +24,7 @@ install:
 .PHONY: up
 up:
 	@echo "Starting Flask server from $(WORKDIR)..."
-	$(ACTIVATE) && cd $(WORKDIR) && python3 app.py
-
+	$(ACTIVATE) && PYTHONPATH=$(WORKDIR) python3 $(WORKDIR)/app.py
 .PHONY: docker-build
 docker-build:
 	@echo "Building Docker image..."

@@ -31,12 +31,7 @@ header h1 {
     font-size: 3.5rem;
     letter-spacing: 5px;
     color: #00b4d8;
-    text-shadow:
-        0 0 5px #00b4d8,
-        0 0 10px #00b4d8,
-        0 0 20px #0077b6,
-        0 0 40px #0077b6;
-    animation: glow 2s ease-in-out infinite alternate;
+    text-shadow:none;
 }
 
 @keyframes glow {
