@@ -4,30 +4,6 @@
     <meta charset="UTF-8">
     <title>Monopoly Vision Board</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 10px;
-            background: #00bcd4;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #0097a7;
-        }
-
-        .video-frame img {
-            border-radius: 10px;
-        }
-
-        .camera-container {
-            text-align: center;
-        }
-    </style>
 </head>
 <body>
 <div class="overlay"></div>
@@ -39,28 +15,13 @@
 <main>
     <div class="camera-container">
         <div class="video-frame">
-            <img src="{{ url_for('video_bp.video_feed') }}" alt="Live Video Feed">
+            <img id="video-feed" src="{{ url_for('video_bp.video_feed') }}" alt="Live Video Feed">
         </div>
-        <button class="toggle-button" onclick="toggleView()">Virtual Board</button>
     </div>
 </main>
 
 <footer>
     <p>Created by <strong>Tikam & Tikom</strong> — Copyrights 2025</p>
 </footer>
-
-<script>
-    function toggleView() {
-        fetch("/toggle_view").then(response => {
-            console.log("Toggled view");
-        });
-    }
-
-    // Auto-refresh de l'image toutes les 100ms pour le plateau virtuel / caméra
-    setInterval(() => {
-        const img = document.getElementById("video-feed");
-        img.src = "{{ url_for('video_bp.video_feed') }}?t=" + new Date().getTime();
-    }, 100);
-</script>
 </body>
 </html>

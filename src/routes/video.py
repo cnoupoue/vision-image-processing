@@ -12,11 +12,5 @@ def index():
 
 @video_bp.route('/video_feed')
 def video_feed():
-    return Response(camera.generate_frames(),
+    return Response(camera.generate_jpeg_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
-@video_bp.route('/toggle', methods=['POST'])
-def toggle():
-    camera.toggle_view()
-    return ('', 204)

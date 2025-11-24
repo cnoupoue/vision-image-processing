@@ -127,19 +127,10 @@ footer strong {
     display: block;
 }
 
-.toggle-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 0.5rem 1rem;
-    background: #e94560;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    font-size: 0.9rem;
-    border-radius: 5px;
+.video-frame img {
+    border-radius: 10px;
 }
 
-.toggle-button:hover {
-    background: #d73450;
+.camera-container {
+    text-align: center;
 }
