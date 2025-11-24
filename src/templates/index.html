@@ -1,27 +1,133 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Monopoly Vision Board</title>
+    <title>Monopoly Vision</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-<div class="overlay"></div>
+
 <header>
-    <h1>Monopoly Vision Board</h1>
-    <p>Real-time game board detection powered by your camera</p>
+    <h1>Monopoly Vision</h1>
 </header>
 
 <main>
-    <div class="camera-container">
-        <div class="video-frame">
-            <img id="video-feed" src="{{ url_for('video_bp.video_feed') }}" alt="Live Video Feed">
+    <section class="vision-section">
+        <div class="camera-container" id="camContainer">
+            <div class="video-frame">
+                <img id="video-feed" src="{{ url_for('video_bp.video_feed') }}" alt="Live Video Feed">
+            </div>
         </div>
-    </div>
+
+        <div class="status-box" id="statusBox">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Recherche du plateau...</span>
+        </div>
+    </section>
+
+    <aside class="game-panel">
+        <h2>État de la partie</h2>
+
+        <div id="playersContainer" class="players-grid">
+            </div>
+
+        <div class="game-logs" id="logsContainer">
+            <div class="log-entry">En attente du début...</div>
+        </div>
+
+        <div class="controls">
+            <button id="btnRoll" class="btn-roll" onclick="rollDice()">Lancer les dés 🎲</button>
+        </div>
+    </aside>
 </main>
 
 <footer>
-    <p>Created by <strong>Tikam & Tikom</strong> — Copyrights 2025</p>
+    <p>Created by <strong>Tikam & Tikom</strong> — 2025</p>
 </footer>
+
+<script>
+    // --- GESTION CAMERA ---
+    const statusText = document.getElementById('statusText');
+    const statusDot = document.getElementById('statusDot');
+    const camContainer = document.getElementById('camContainer');
+    const statusBox = document.getElementById('statusBox');
+
+    function checkVisionStatus() {
+        fetch('/status?t=' + Date.now())
+            .then(res => res.json())
+            .then(data => {
+                if (data.detected) {
+                    if (statusText.innerText !== "Plateau Détecté !") {
+                        statusText.innerText = "Plateau Détecté !";
+                        statusDot.style.backgroundColor = "#2ecc71";
+                        camContainer.classList.add('detected');
+                        statusBox.classList.add('detected');
+                    }
+                } else {
+                    if (statusText.innerText !== "Recherche...") {
+                        statusText.innerText = "Recherche...";
+                        statusDot.style.backgroundColor = "#e74c3c";
+                        camContainer.classList.remove('detected');
+                        statusBox.classList.remove('detected');
+                    }
+                }
+            });
+    }
+
+    // --- GESTION JEU ---
+    const playersContainer = document.getElementById('playersContainer');
+    const logsContainer = document.getElementById('logsContainer');
+    const btnRoll = document.getElementById('btnRoll');
+
+    function updateGameState() {
+        fetch('/game/state?t=' + Date.now())
+            .then(res => res.json())
+            .then(data => {
+                renderPlayers(data.players, data.current_player.id);
+                renderLogs(data.logs);
+                btnRoll.innerText = `Au tour de ${data.current_player.name} (Lancer)`;
+            })
+            .catch(e => console.log("Jeu pas encore prêt"));
+    }
+
+    function renderPlayers(players, currentId) {
+        playersContainer.innerHTML = '';
+        players.forEach(p => {
+            const isActive = p.id === currentId;
+            const card = document.createElement('div');
+            card.className = `player-card ${isActive ? 'active' : ''}`;
+            // Bordure colorée selon le joueur
+            card.style.borderLeftColor = isActive ? '#f1c40f' : p.color;
+
+            card.innerHTML = `
+                <div class="player-header">
+                    <span class="p-name" style="color:${p.color}">${p.name}</span>
+                    <span class="p-money">${p.money} $</span>
+                </div>
+                <div class="p-pos">Position: Case ${p.position}</div>
+            `;
+            playersContainer.appendChild(card);
+        });
+    }
+
+    function renderLogs(logs) {
+        logsContainer.innerHTML = logs.map(log => `<div class="log-entry">> ${log}</div>`).join('');
+    }
+
+    function rollDice() {
+        btnRoll.disabled = true;
+        fetch('/game/roll')
+            .then(res => res.json())
+            .then(data => {
+                updateGameState();
+                setTimeout(() => btnRoll.disabled = false, 1000);
+            });
+    }
+
+    // Boucles
+    setInterval(checkVisionStatus, 500);
+    setInterval(updateGameState, 1000);
+</script>
+
 </body>
 </html>
