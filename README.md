@@ -49,6 +49,22 @@ The browser displays this live feed in real time at `/video_feed`.
 - **OpenCV (cv2)**
 - **Numpy**
 
+### Tree
+```plaintext
+├── src
+│   ├── game
+│   │   ├── engine.py       # La logique pure (Règles, Joueurs)
+│   │   ├── controller.py   # Le chef d'orchestre (Boucle Vidéo + Logique Caméra) <--- NOUVEAU
+│   │   ├── visualizer.py   # Le peintre (Dessine les ronds)
+│   │   └── dice.py         # L'oeil (Détecte les dés)
+│   ├── routes
+│   │   ├── video.py        # Route HTTP pour le flux vidéo (Appelle controller)
+│   │   └── game.py         # Route API pour le Front-End (Appelle engine)
+│   └── camera
+│       └── camera.py       # Traitement d'image pur (Homographie, contours)
+   
+```
+
 ## Prerequisites
 
 Before getting started, make sure you have the following installed on your machine:

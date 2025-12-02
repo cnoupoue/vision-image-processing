@@ -36,7 +36,14 @@
         </div>
 
         <div class="controls">
-            <button id="btnRoll" class="btn-roll" onclick="rollDice()">Lancer les dés 🎲</button>
+            <button id="btnBuy" class="btn-roll" onclick="buyProperty()" style="background-color: #27ae60; display: none; margin-bottom: 10px;">
+                Acheter la Propriété 🏠
+            </button>
+            <button id="btnRoll" class="btn-roll" onclick="rollDice()">Lancer Manuel 🎲</button>
+
+            <button id="btnNext" class="btn-roll" onclick="nextTurn()" style="background-color: #e67e22; margin-top: 10px;">
+                Tour Suivant >>
+            </button>
         </div>
     </aside>
 </main>
@@ -79,13 +86,50 @@
     const logsContainer = document.getElementById('logsContainer');
     const btnRoll = document.getElementById('btnRoll');
 
-    function updateGameState() {
+   function updateGameState() {
         fetch('/game/state?t=' + Date.now())
             .then(res => res.json())
             .then(data => {
                 renderPlayers(data.players, data.current_player.id);
                 renderLogs(data.logs);
+
+                const btnRoll = document.getElementById('btnRoll');
+                const btnNext = document.getElementById('btnNext');
+                const btnBuy = document.getElementById('btnBuy');
+
+                // Mise à jour du texte du bouton Lancer
                 btnRoll.innerText = `Au tour de ${data.current_player.name} (Lancer)`;
+
+                // --- GESTION INTELLIGENTE DES BOUTONS ---
+
+                // 1. Bouton ACHETER
+                if (data.game_state === "CAN_BUY") {
+                    // Si on peut acheter, on affiche le bouton vert
+                    btnBuy.style.display = "block";
+                    // On met le prix dans le bouton pour faire stylé
+                    if (data.current_square) {
+                        btnBuy.innerText = `Acheter ${data.current_square.name} (${data.current_square.price} $)`;
+                    }
+                    // On cache "Lancer" car le tour est joué
+                    btnRoll.disabled = true;
+                } else {
+                    // Sinon on cache
+                    btnBuy.style.display = "none";
+                }
+
+                // 2. Bouton TOUR SUIVANT
+                // Il est toujours visible sauf si on attend un lancer
+                if (data.game_state === "WAITING_ROLL") {
+                    btnNext.disabled = true;
+                    btnNext.style.opacity = "0.5";
+                    btnRoll.disabled = false;
+                } else {
+                    // Si on a bougé (MOVED) ou qu'on peut acheter (CAN_BUY)
+                    // On peut décider de passer son tour (sans acheter)
+                    btnNext.disabled = false;
+                    btnNext.style.opacity = "1";
+                    btnRoll.disabled = true;
+                }
             })
             .catch(e => console.log("Jeu pas encore prêt"));
     }
@@ -121,6 +165,25 @@
             .then(data => {
                 updateGameState();
                 setTimeout(() => btnRoll.disabled = false, 1000);
+            });
+    }
+
+    function nextTurn() {
+        console.log("Clic sur Tour Suivant");
+        fetch('/game/next-turn')
+            .then(res => res.json())
+            .then(data => {
+                console.log("Tour passé !");
+                updateGameState(); // On rafraîchit l'affichage tout de suite
+            })
+            .catch(err => console.error("Erreur:", err));
+    }
+    function buyProperty() {
+        fetch('/game/buy')
+            .then(res => res.json())
+            .then(data => {
+                console.log(data.message);
+                updateGameState(); // On rafraîchit pour cacher le bouton Achat
             });
     }
 

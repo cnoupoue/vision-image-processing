@@ -3,6 +3,15 @@ SET VENV_NAME=venv
 SET WORKDIR=src
 SET DOCKER_COMPOSE=docker-compose
 
+REM -----------------------
+REM Check arguments first
+REM -----------------------
+if "%1"=="install" goto install
+if "%1"=="up" goto up
+if "%1"=="docker-build" goto docker-build
+if "%1"=="docker-up" goto docker-up
+goto help
+
 ::-----------------------
 :: Help
 ::-----------------------
@@ -37,6 +46,10 @@ goto :eof
 :up
 echo Starting Flask server from %WORKDIR%...
 call %VENV_NAME%\Scripts\activate.bat
+if not exist %WORKDIR%\app.py (
+    echo ERROR: app.py not found in %WORKDIR%
+    goto :eof
+)
 cd %WORKDIR%
 python app.py
 goto :eof
@@ -56,13 +69,3 @@ goto :eof
 echo Starting Flask server with Docker Compose...
 %DOCKER_COMPOSE% -f docker-compose.yml up
 goto :eof
-
-::-----------------------
-:: Check arguments
-::-----------------------
-if "%1"=="install" goto install
-if "%1"=="up" goto up
-if "%1"=="docker-build" goto docker-build
-if "%1"=="docker-up" goto docker-up
-goto help
-

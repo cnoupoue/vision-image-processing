@@ -13,65 +13,90 @@ body {
     margin: 0;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh; /* Force la hauteur exacte de l'écran */
     background: radial-gradient(circle at center, #0b132b 0%, #1c2541 80%);
-    overflow: hidden; /* Pour éviter le scroll si possible */
+    overflow: hidden;
 }
 
 header {
     text-align: center;
-    padding: 10px;
+    padding: 5px 10px; /* Réduit le padding */
     background: rgba(0,0,0,0.3);
     font-family: 'Monoton', cursive;
     letter-spacing: 2px;
+    height: 5vh; /* Hauteur fixe petite */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+header h1 {
+    font-size: 1.5rem; /* Titre plus petit */
+    margin: 0;
 }
 
 /* --- LAYOUT PRINCIPAL (SPLIT SCREEN) --- */
 main {
     display: flex;
-    flex-direction: row; /* GAUCHE / DROITE */
-    flex: 1;
+    flex-direction: row;
     width: 100%;
-    height: calc(100vh - 100px); /* Prend toute la hauteur moins le header/footer */
+    height: 90vh; /* Utilise tout l'espace restant */
+    padding: 10px;
+    gap: 10px;
+    box-sizing: border-box;
 }
 
-/* --- PARTIE GAUCHE : VISION --- */
+/* --- PARTIE GAUCHE : VISION (PRIORITAIRE) --- */
 .vision-section {
-    flex: 2; /* Prend 66% de l'espace */
+    flex: 3; /* Prend 3 parts (75%) */
+    background-color: #000;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify_content: center;
-    padding: 20px;
+    justify-content: center;
     position: relative;
+    overflow: hidden;
+    padding: 0; /* Pas de padding pour maximiser la vidéo */
 }
 
 .camera-container {
     width: 100%;
-    max-width: 600px;
-    aspect-ratio: 1 / 1;
-    border: 5px solid #333;
-    border-radius: 15px;
-    overflow: hidden;
-    background: #000;
-    transition: all 0.5s ease;
+    height: 100%; /* Prend toute la hauteur disponible */
+    /* On supprime le max-width et l'aspect-ratio fixe */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.video-frame, .video-frame img {
-    width: 100%; height: 100%; object-fit: cover;
+.video-frame {
+    width: 100%;
+    height: 100%;
+    display: flex;
 }
 
-.camera-container.detected {
-    border-color: var(--monopoly-green);
-    box-shadow: 0 0 40px rgba(46, 204, 113, 0.4);
+.video-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* CRUCIAL : Garde les proportions réelles sans couper */
+    display: block;
+}
+
+/* Indicateur visuel de détection (bordure fine si détecté) */
+.camera-container.detected img {
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.2);
+    border: 2px solid var(--monopoly-green);
 }
 
 .status-box {
-    margin-top: 20px;
-    padding: 10px 20px;
+    position: absolute; /* On le met par dessus l'image en bas */
+    bottom: 20px;
+    padding: 8px 15px;
     border-radius: 20px;
-    background: #333;
+    background: rgba(0, 0, 0, 0.7); /* Semi-transparent */
     display: flex; align-items: center; gap: 10px;
+    z-index: 10;
+    backdrop-filter: blur(5px);
 }
 .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--monopoly-red); }
 .detected .status-dot { background: var(--monopoly-green); }
@@ -79,24 +104,26 @@ main {
 
 /* --- PARTIE DROITE : JEU (PANEL) --- */
 .game-panel {
-    flex: 1; /* Prend 33% de l'espace */
+    flex: 1; /* Prend 1 part (25%) */
+    min-width: 300px; /* Largeur minimum pour ne pas écraser le texte */
     background: var(--panel-bg);
-    border-left: 2px solid #444;
-    padding: 20px;
+    border-radius: 12px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+    overflow-y: auto; /* Scroll si l'écran est petit en hauteur */
 }
 
-h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #444; padding-bottom: 10px; }
+h2 { margin-top: 0; font-size: 1.1rem; border-bottom: 1px solid #444; padding-bottom: 5px; }
 
 /* Cartes Joueurs */
-.players-grid { display: flex; flex-direction: column; gap: 15px; }
+.players-grid { display: flex; flex-direction: column; gap: 10px; }
 
 .player-card {
     background: #333;
-    padding: 15px;
+    padding: 10px;
     border-radius: 8px;
     border-left: 5px solid transparent;
     transition: transform 0.2s, background 0.3s;
@@ -109,32 +136,36 @@ h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #444; padding-bo
 }
 
 .player-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; }
-.p-pos { font-size: 0.85rem; color: #aaa; }
+.p-pos { font-size: 0.8rem; color: #aaa; }
 
 /* Logs et Boutons */
 .game-logs {
-    flex-grow: 1; /* Prend l'espace restant */
+    flex-grow: 1;
     background: #1a1a1a;
     border-radius: 5px;
     padding: 10px;
     overflow-y: auto;
     font-family: monospace;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #ccc;
     border: 1px solid #333;
-    max-height: 200px;
+    min-height: 100px;
 }
 
 .log-entry { padding: 4px 0; border-bottom: 1px solid #2a2a2a; }
 
+.controls {
+    margin-top: auto; /* Pousse le bouton vers le bas */
+}
+
 .btn-roll {
     width: 100%;
-    padding: 15px;
+    padding: 12px;
     background: linear-gradient(135deg, #3498db, #2980b9);
     color: white;
     border: none;
-    border-radius: 10px;
-    font-size: 1.1rem;
+    border-radius: 8px;
+    font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
     transition: transform 0.1s;
@@ -142,4 +173,4 @@ h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #444; padding-bo
 .btn-roll:active { transform: scale(0.98); }
 .btn-roll:disabled { background: #555; cursor: not-allowed; }
 
-footer { text-align: center; padding: 10px; font-size: 0.8rem; opacity: 0.6; }
+footer { display: none; /* On cache le footer pour gagner de la place */ }
