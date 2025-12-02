@@ -53,6 +53,7 @@ The browser displays this live feed in real time at `/video_feed`.
 ```plaintext
 ├── src
 │   ├── game
+│   │   ├── board_data.py   # Données du jeu (cases et position en JSON)
 │   │   ├── engine.py       # La logique pure (Règles, Joueurs)
 │   │   ├── controller.py   # Le chef d'orchestre (Boucle Vidéo + Logique Caméra) <--- NOUVEAU
 │   │   ├── visualizer.py   # Le peintre (Dessine les ronds)

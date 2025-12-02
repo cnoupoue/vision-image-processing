@@ -1,4 +1,5 @@
 import random
+import time
 from game.board_data import get_square_data, TYPE_PROPERTY, TYPE_STATION, TYPE_UTILITY, TYPE_TAX
 
 
@@ -9,22 +10,37 @@ class MonopolyEngine:
             {'id': 2, 'name': 'Joueur 2', 'color': '#e74c3c', 'position': 0, 'money': 1500}
         ]
         self.current_player_index = 0
-        self.game_log = ["Bienvenue dans Naruto Monopoly !"]
+        self.game_log = ["En attente du démarrage..."]
         self.last_dice_roll = None
-        self.state = "WAITING_ROLL"  # États: WAITING_ROLL, MOVED, CAN_BUY
-
-        # Qui possède quoi ? { index_case: id_joueur }
-        # Ex: { 39: 1 } veut dire que Naruto appartient au Joueur 1
+        self.state = "NOT_STARTED"
         self.ownership = {}
+
+        # Effets visuels
+        self.visual_effects = []
+        self.last_flash = {'index': -1, 'time': 0}
+
+    def add_floating_text(self, text, square_index, color_bgr):
+        """Ajoute un texte flottant à la liste"""
+        self.visual_effects.append({
+            'text': text,
+            'pos': square_index,
+            'color': color_bgr,
+            'start_time': time.time()
+        })
 
     def get_current_player(self):
         return self.players[self.current_player_index]
+
+    def start_game(self):
+        self.state = "WAITING_ROLL"
+        self.game_log.insert(0, "🏁 LA PARTIE COMMENCE !")
+        return True
 
     def roll_dice(self, manual_value=None):
         if self.state != "WAITING_ROLL":
             return None
 
-        # 1. Gestion des dés
+        # 1. Valeur des dés
         if manual_value is not None:
             total = manual_value
         else:
@@ -38,72 +54,69 @@ class MonopolyEngine:
         new_pos = (old_pos + total) % 40
         player['position'] = new_pos
 
-        # Règle : Passage par la case départ (si on boucle)
+        # Salaire Départ
         if new_pos < old_pos:
             player['money'] += 200
             self.game_log.insert(0, f"💰 {player['name']} passe par DÉPART (+200$).")
+            self.add_floating_text("+200 $", 0, (0, 255, 0))
 
-        # 3. Analyse de la case
+        # 3. Logique de la case
         square = get_square_data(new_pos)
         s_name = square['name']
         s_type = square['type']
 
-        log_msg = f"{player['name']} a fait {total} et atterrit sur {s_name}."
-
-        # --- LOGIQUE D'INTERACTION ---
+        log_msg = f"{player['name']} fait {total} -> {s_name}."
         owner_id = self.ownership.get(new_pos)
 
-        # CAS A : Case achetable (Propriété, Gare, Compagnie)
+        # GESTION PRISON (Case 30)
+        if new_pos == 30:
+            self.game_log.insert(0, f"👮 POLICE ! {player['name']} va en Prison !")
+            self.state = "MOVED"
+            return total  # Le controller gérera l'anim
+
+        # GESTION PROPRIETES
         if s_type in [TYPE_PROPERTY, TYPE_STATION, TYPE_UTILITY]:
             if owner_id is None:
-                # Personne ne l'a -> On peut acheter !
+                # C'EST ICI QUE LE BOUTON ACHETER EST ACTIVÉ
                 price = square['price']
                 if player['money'] >= price:
                     log_msg += f" (A VENDRE: {price}$)"
-                    self.state = "CAN_BUY"  # Nouvel état spécial !
+                    self.state = "CAN_BUY"  # <--- IMPORTANT
                 else:
-                    log_msg += " (Trop cher pour vous)"
+                    log_msg += " (Trop cher)"
                     self.state = "MOVED"
             elif owner_id == player['id']:
-                log_msg += " (Vous êtes chez vous)."
+                log_msg += " (Chez vous)."
                 self.state = "MOVED"
             else:
-                # Appartient à un autre -> PAYER LOYER !
                 rent = square.get('rent', 0)
-                # (On fera le calcul complexe des loyers plus tard)
-                self.pay_rent(player, owner_id, rent)
-                log_msg += f" (Chez Joueur {owner_id}. Loyer payé: -{rent}$)"
+                self.pay_rent(player, owner_id, rent, new_pos)
+                log_msg += f" (Loyer: -{rent}$)"
                 self.state = "MOVED"
 
-        # CAS B : Taxes
         elif s_type == TYPE_TAX:
             amount = square.get('amount', 0)
             player['money'] -= amount
-            log_msg += f" (Taxe payée: -{amount}$)"
+            self.add_floating_text(f"-{amount} $", new_pos, (0, 0, 255))
+            log_msg += f" (Taxe: -{amount}$)"
             self.state = "MOVED"
 
         else:
-            # Autres cases (Chance, Prison...)
             self.state = "MOVED"
 
         self.game_log.insert(0, log_msg)
         return total
 
-    def pay_rent(self, current_player, owner_id, amount):
-        """Transfert l'argent d'un joueur à un autre"""
-        # 1. Retirer au payeur
+    def pay_rent(self, current_player, owner_id, amount, pos):
         current_player['money'] -= amount
-
-        # 2. Donner au receveur
+        self.add_floating_text(f"-{amount} $", pos, (0, 0, 255))
         for p in self.players:
             if p['id'] == owner_id:
                 p['money'] += amount
                 break
 
     def buy_current_property(self):
-        """Appelé quand le joueur clique sur 'ACHETER'"""
-        if self.state != "CAN_BUY":
-            return False, "Action impossible"
+        if self.state != "CAN_BUY": return False, "Impossible"
 
         player = self.get_current_player()
         pos = player['position']
@@ -113,12 +126,22 @@ class MonopolyEngine:
         if player['money'] >= price:
             player['money'] -= price
             self.ownership[pos] = player['id']
-            self.state = "MOVED"  # Achat fait, on repasse en mode normal
-            msg = f"💸 {player['name']} a acheté {square['name']} pour {price}$ !"
+            self.state = "MOVED"
+
+            # Effets : Texte Jaune + Flash
+            self.add_floating_text(f"-{price} $", pos, (0, 255, 255))
+            self.last_flash = {'index': pos, 'time': time.time()}
+
+            msg = f"💸 {player['name']} achète {square['name']} !"
             self.game_log.insert(0, msg)
             return True, msg
 
         return False, "Pas assez d'argent"
+
+    def send_to_jail(self):
+        player = self.get_current_player()
+        player['position'] = 10
+        self.add_floating_text("POOF!", 30, (100, 100, 100))
 
     def next_turn(self):
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
@@ -127,20 +150,17 @@ class MonopolyEngine:
         self.game_log.insert(0, f"--- Tour de {next_player['name']} ---")
 
     def get_state(self):
-        # On ajoute l'info de la case actuelle pour le Front-End
         current_player = self.get_current_player()
         current_square = get_square_data(current_player['position'])
-
         return {
             'players': self.players,
             'current_player': current_player,
             'logs': self.game_log[:6],
             'last_roll': self.last_dice_roll,
-            'game_state': self.state,  # WAITING_ROLL, MOVED, CAN_BUY
+            'game_state': self.state,
             'current_square': current_square,
             'ownership': self.ownership
         }
 
 
-# Instance globale
 game_instance = MonopolyEngine()

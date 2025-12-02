@@ -7,11 +7,6 @@ game_bp = Blueprint('game_bp', __name__)
 def get_game_state():
     return jsonify(game_instance.get_state())
 
-@game_bp.route('/roll')
-def roll_dice():
-    result = game_instance.roll_dice()
-    return jsonify({'roll': result, 'state': game_instance.get_state()})
-
 @game_bp.route('/next-turn')
 def next_turn():
     # On appelle la méthode du moteur qui change de joueur
@@ -27,3 +22,8 @@ def buy_property():
         'message': msg,
         'state': game_instance.get_state()
     })
+
+@game_bp.route('/start')
+def start_game():
+    game_instance.start_game()
+    return jsonify({'state': game_instance.get_state()})

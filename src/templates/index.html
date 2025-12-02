@@ -36,12 +36,17 @@
         </div>
 
         <div class="controls">
+            <button id="btnStart" class="btn-roll" onclick="startGame()" style="background-color: #8e44ad; font-size: 1.2rem; margin-bottom: 10px;">
+                🏁 Démarrer la Partie
+            </button>
+
             <button id="btnBuy" class="btn-roll" onclick="buyProperty()" style="background-color: #27ae60; display: none; margin-bottom: 10px;">
                 Acheter la Propriété 🏠
             </button>
-            <button id="btnRoll" class="btn-roll" onclick="rollDice()">Lancer Manuel 🎲</button>
 
-            <button id="btnNext" class="btn-roll" onclick="nextTurn()" style="background-color: #e67e22; margin-top: 10px;">
+            <button id="btnRoll" class="btn-roll" onclick="rollDice()" style="display:none;">Lancer Manuel 🎲</button>
+
+            <button id="btnNext" class="btn-roll" onclick="nextTurn()" style="background-color: #e67e22; margin-top: 10px; display:none;">
                 Tour Suivant >>
             </button>
         </div>
@@ -86,46 +91,57 @@
     const logsContainer = document.getElementById('logsContainer');
     const btnRoll = document.getElementById('btnRoll');
 
-   function updateGameState() {
+  function startGame() {
+        fetch('/game/start')
+            .then(res => res.json())
+            .then(data => updateGameState());
+    }
+
+    function updateGameState() {
         fetch('/game/state?t=' + Date.now())
             .then(res => res.json())
             .then(data => {
                 renderPlayers(data.players, data.current_player.id);
                 renderLogs(data.logs);
 
+                const btnStart = document.getElementById('btnStart');
                 const btnRoll = document.getElementById('btnRoll');
                 const btnNext = document.getElementById('btnNext');
                 const btnBuy = document.getElementById('btnBuy');
 
-                // Mise à jour du texte du bouton Lancer
-                btnRoll.innerText = `Au tour de ${data.current_player.name} (Lancer)`;
+                // CAS 1 : PARTIE NON COMMENCÉE
+                if (data.game_state === "NOT_STARTED") {
+                    btnStart.style.display = "block";
+                    btnRoll.style.display = "none";
+                    btnNext.style.display = "none";
+                    btnBuy.style.display = "none";
+                    return; // On arrête là, pas besoin de gérer le reste
+                }
 
-                // --- GESTION INTELLIGENTE DES BOUTONS ---
+                // CAS 2 : PARTIE EN COURS
+                btnStart.style.display = "none"; // On cache le bouton start
 
-                // 1. Bouton ACHETER
+                // Gestion du bouton ACHETER
                 if (data.game_state === "CAN_BUY") {
-                    // Si on peut acheter, on affiche le bouton vert
                     btnBuy.style.display = "block";
-                    // On met le prix dans le bouton pour faire stylé
                     if (data.current_square) {
                         btnBuy.innerText = `Acheter ${data.current_square.name} (${data.current_square.price} $)`;
                     }
-                    // On cache "Lancer" car le tour est joué
-                    btnRoll.disabled = true;
+                    btnRoll.style.display = "none";
                 } else {
-                    // Sinon on cache
                     btnBuy.style.display = "none";
+                    btnRoll.style.display = "block"; // On réaffiche le lancer manuel au cas où
                 }
 
-                // 2. Bouton TOUR SUIVANT
-                // Il est toujours visible sauf si on attend un lancer
+                btnRoll.innerText = `Au tour de ${data.current_player.name} (Lancer)`;
+
+                // Gestion du bouton TOUR SUIVANT
+                btnNext.style.display = "block";
                 if (data.game_state === "WAITING_ROLL") {
                     btnNext.disabled = true;
                     btnNext.style.opacity = "0.5";
                     btnRoll.disabled = false;
                 } else {
-                    // Si on a bougé (MOVED) ou qu'on peut acheter (CAN_BUY)
-                    // On peut décider de passer son tour (sans acheter)
                     btnNext.disabled = false;
                     btnNext.style.opacity = "1";
                     btnRoll.disabled = true;
