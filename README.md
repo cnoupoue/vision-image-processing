@@ -1,111 +1,141 @@
-# Game Plate Vision Analyzer
+# Monopoly Vision AR (Naruto Edition)
 
-This project analyzes a physical game board in real-time using **OpenCV**, detects and identifies the pieces present, and reconstructs their positions digitally.  
-A **Flask** web server provides a live interface to visualize the detected board state.
+**Monopoly Vision AR** is a hybrid project combining **Computer Vision**, **Game Logic**, and **Augmented Reality**. It analyzes a physical Monopoly board in real-time, detects dice rolls, enforces game rules autonomously, and projects interactive animations back onto the video feed.
+
+A **Flask** web server provides a live interface to visualize the game state, manage players, and interact with the physical board.
 
 ## Assignment Due Date
 
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/mdfMrQS_)
-
 ## Features
-- Real-time video capture and analysis with OpenCV  
-- Game piece detection and classification  
-- Flask-based web interface for visualization and interaction  
-- Modular and extensible architecture  
 
-## How It Works
+### 🎮 Game Mechanics
 
-This project uses your **iPhone as a webcam** through **Continuity Camera** (macOS) or **Camo Virtual Driver** (Windows).  
-No extra apps need to be running — the system handles everything automatically.
+* **Automated Dice Detection:** Detects physical dice rolls and moves tokens automatically.
+* **Complete Monopoly Logic:** Handles property buying, rent payments, taxes, and "Go to Jail" mechanics.
+* **Economic System:** Automatic money transfer between players and the bank.
+* **Interactive Web Interface:** Buttons to buy properties, start the game, or end turns manually.
 
-### System Integration
+### ✨ Augmented Reality (AR)
 
-macOS and Windows expose the iPhone as a **standard UVC (USB Video Class) webcam** using a built-in or virtual driver.  
-This means OpenCV can access it like any normal webcam — no manual setup required.
+* **Real-time Board Tracking:** The system locks onto the board regardless of camera angle.
+* **Dynamic Overlays:**
+* **Property Ownership:** Owned squares are highlighted in the player's color.
+* **Token Animation:** Smooth movement interpolation (tokens "hop" from square to square).
+* **Floating Text:** Financial transactions (`+200$`, `-50$`) float above the board.
+* **Visual Effects:** Flash effects on purchase, "Ninja Smoke" animation when going to jail, and pulsing aura for the active player.
 
-### OpenCV
 
-`cv2.VideoCapture()` simply requests the first available camera from the OS.  
-The system returns the virtual iPhone camera (e.g., *“Camo Studio Virtual Camera”* or *“Continuity Camera”*).  
-OpenCV reads frames directly from this virtual webcam.
 
-### Flask Streaming
+## Technical Approach & Image Processing
 
-The video frames are encoded as JPEGs and streamed over HTTP using an **MJPEG feed**.  
-The browser displays this live feed in real time at `/video_feed`.
+This project leverages advanced image processing techniques using **OpenCV** to bridge the physical and digital worlds.
 
-### Summary
+### 1. Computer Vision Module (`camera.py`)
 
-| Component | Role |
-|------------|------|
-| **iPhone** | Captures the video feed |
-| **OS driver (Continuity / Camo)** | Exposes iPhone as a virtual webcam |
-| **OpenCV** | Reads frames from the virtual camera |
-| **Flask** | Streams frames to the web |
+* **Board Detection:**
+* Uses **Gaussian Blur** and **Canny Edge Detection** to find contours.
+* Applies **Polygon Approximation (approxPolyDP)** to identify the 4 corners of the board.
+* Enhances contrast using **CLAHE** (Contrast Limited Adaptive Histogram Equalization) for low-light conditions.
+
+
+* **Perspective Transformation:**
+* Computes a **Homography Matrix** to warp the perspective.
+* Transforms the angled camera view into a perfect top-down (bird's-eye) view (`warpPerspective`).
+
+
+* **Dice Detection:**
+* Uses **Otsu’s Binarization** (Adaptive Thresholding) to isolate dice pips.
+* Filters blobs based on circularity and area to count the score.
+* Implements **Temporal Stabilization**: Waits for the dice value to be stable for consecutive frames before triggering an action.
+
+
+
+### 2. Game Engine (`engine.py`)
+
+* Implements a **State Machine** (`WAITING_ROLL`, `MOVED`, `CAN_BUY`) to synchronize physical actions with digital rules.
+* Maps the 40 Monopoly squares to specific coordinates relative to the detected board corners.
+
+### 3. AR Visualization (`visualizer.py`)
+
+* Projects game data back onto the video feed using the inverse homography or direct overlay on the warped image.
+* Uses **Alpha Blending** (`cv2.addWeighted`) for transparent overlays and colorful borders.
 
 ## Tech Stack
-- **Python 3.x**
-- **Flask**
-- **OpenCV (cv2)**
-- **Numpy**
 
-### Tree
+* **Language:** Python 3.x
+* **Computer Vision:** OpenCV (cv2), Numpy
+* **Backend:** Flask (Web Server & Streaming)
+* **Frontend:** HTML5, CSS3, JavaScript (Fetch API)
+* **Containerization:** Docker
+
+## Project Architecture
+
 ```plaintext
 ├── src
 │   ├── game
-│   │   ├── board_data.py   # Données du jeu (cases et position en JSON)
-│   │   ├── engine.py       # La logique pure (Règles, Joueurs)
-│   │   ├── controller.py   # Le chef d'orchestre (Boucle Vidéo + Logique Caméra) <--- NOUVEAU
-│   │   ├── visualizer.py   # Le peintre (Dessine les ronds)
-│   │   └── dice.py         # L'oeil (Détecte les dés)
+│   │   ├── board_data.py   # Data model (40 squares, prices, types, coordinates)
+│   │   ├── engine.py       # Core Logic (Rules, Player State, Economy)
+│   │   ├── controller.py   # Main Loop (Orchestrates Camera, Engine, and Visualizer)
+│   │   ├── visualizer.py   # AR Renderer (Draws tokens, effects, and overlays)
+│   │   └── dice.py         # Dice Detection Logic
 │   ├── routes
-│   │   ├── video.py        # Route HTTP pour le flux vidéo (Appelle controller)
-│   │   └── game.py         # Route API pour le Front-End (Appelle engine)
+│   │   ├── video.py        # MJPEG Streaming Route
+│   │   └── game.py         # API Routes for Frontend interaction (Buy, Roll, etc.)
 │   └── camera
-│       └── camera.py       # Traitement d'image pur (Homographie, contours)
-   
+│       └── camera.py       # Image Processing (Homography, Contours, Stabilization)
+
 ```
 
-## Prerequisites
+## Hardware Setup
 
-Before getting started, make sure you have the following installed on your machine:
+This project uses your **Smartphone** as a high-quality webcam through **Continuity Camera** (macOS) or **Camo Virtual Driver** (Windows).
 
-- [Docker](https://www.docker.com/products/docker-desktop) - Container management
-- [Docker Compose](https://docs.docker.com/compose/) - Container orchestration
-- [Git](https://git-scm.com/) - To clone the repository
-- [Python 3](https://www.python.org/) - Required for the Data Mining service- Docker
-- [Camo Studio](camo.studio) - Required to get the webcam of your phone as a driver on your laptop
-
-You'll also need Camo Video on your iPhone
+| Component | Role |
+| --- | --- |
+| **Smartphone** | Captures the video feed (high resolution). |
+| **Camo / Continuity** | Exposes the phone as a standard USB Webcam driver. |
+| **OpenCV** | Reads frames from the virtual camera index (usually 0 or 1). |
 
 ## Installation
 
-For Linux/macOS
+### Prerequisites
+
+* [Docker Desktop](https://www.docker.com/products/docker-desktop)
+* [Python 3](https://www.python.org/)
+* [Camo Studio](https://www.google.com/search?q=https://camo.studio) (or equivalent webcam software)
+
+### Quick Start
+
+**For Linux/macOS:**
 
 ```bash
 make install
 make up
+# To run via Docker:
 make docker-build
 make docker-up
+
 ```
 
-For Windows
+**For Windows:**
 
 ```bash
 setup.bat install
 setup.bat up
+# To run via Docker:
 setup.bat docker-build
 setup.bat docker-up
-``` 
+
+```
 
 ## Authors
 
-- [Jobelin KOM](https://linkedin.com/in/jobelin-kom/).
-- [Cameron NOUPOUE](https://linkedin.com/in/cnoupoue/).
+* [Jobelin KOM](https://linkedin.com/in/jobelin-kom/)
+* [Cameron NOUPOUE](https://linkedin.com/in/cnoupoue/)
 
-## Credits 
+## Credits
 
-Project devised and created during my studies at the Haute-Ecole de la Province de Liège (HEPL), Belgium.
+Project devised and created during computer science studies at the **Haute-Ecole de la Province de Liège (HEPL)**, Belgium.
 
 ## Licenses
 
